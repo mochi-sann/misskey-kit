@@ -10,7 +10,7 @@ export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 
 SUFFIX="${1:-}"
 
-docker compose exec db pg_dump -d misskey -F custom \
+docker compose exec db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -F custom \
     | \
 docker run --rm -i --env-file "$SCRIPT_DIR"/../etc/docker.env amazon/aws-cli:2.22.35 \
     ${S3_ENDPOINT:+--endpoint-url "${S3_ENDPOINT}"} \
