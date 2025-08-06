@@ -8,7 +8,7 @@ echo "{
     \"master\": \"${AI_MASTER:-ご主人様}\",
     \"notingEnabled\": \"true\",
     \"keywordEnabled\": \"true\",
-    \"chartEnabled\": \"false\",
+    \"chartEnabled\": \"true\",
     \"reversiEnabled\": \"true\",
     \"serverMonitoring\": \"true\",
     \"checkEmojisEnabled\": \"true\",
