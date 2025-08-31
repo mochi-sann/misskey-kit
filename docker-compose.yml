@@ -41,6 +41,7 @@ services:
     environment:
       - VIRTUAL_HOST=~^.*$$  # marker for lb
       - VIRTUAL_PORT=3000  # target port for lb
+      - TZ=Asia/Tokyo
 
   redis:
     restart: always
@@ -49,6 +50,8 @@ services:
       - internal_network
     volumes:
       - redis-data:/data
+    environment:
+      - TZ=Asia/Tokyo
     healthcheck:
       test: "redis-cli ping"
       interval: 5s
@@ -65,6 +68,8 @@ services:
     volumes:
       - ${COMPOSE_PROJECT_DIR:-.}/etc/pg-init.sql:/docker-entrypoint-initdb.d/pg-init.sql:ro
       - db-data:/var/lib/postgresql/data
+    environment:
+      - TZ=Asia/Tokyo
     healthcheck:
       test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 5s
@@ -81,6 +86,8 @@ services:
       - ./etc/docker.env
     volumes:
       - ai-data:/ai/data/
+    environment:
+      - TZ=Asia/Tokyo
 
   cron:
     build:
@@ -90,6 +97,7 @@ services:
       - ${COMPOSE_PROJECT_DIR:-.}/:/misskey/:ro
     environment:
       - COMPOSE_PROJECT_DIR=${COMPOSE_PROJECT_DIR:-${PWD:-.}}
+      - TZ=Asia/Tokyo
     networks:
       - external_network  # needs internet access to perform git pull or docker pull
 
