@@ -86,7 +86,7 @@ services:
       - ./etc/docker.env
     volumes:
       - ai-data:/ai/data/
-      - ./etc/ai/config.json:/ai/config.json
+      - ./etc/ai:/ai
     environment:
       - TZ=Asia/Tokyo
 
