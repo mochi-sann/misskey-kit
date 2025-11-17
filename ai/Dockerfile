@@ -7,7 +7,7 @@ ARG AI_MISSKEY_TOKEN
 ARG AI_MASTER
 ARG AI_GEMINI_API_TOKEN
 
-RUN cd / && git clone --depth 1 mochi-hoge https://github.com/mochi-sann/ai.git
+RUN cd / && git clone --depth 1 https://github.com/syuilo/ai.git
 
 RUN if [ $enable_mecab -ne 0 ]; then apt-get update \
   && apt-get install mecab libmecab-dev mecab-ipadic-utf8 make curl xz-utils file sudo --no-install-recommends -y \
