@@ -10,8 +10,14 @@ Cloudflareを使うので固定IPアドレスは不要、それどころかグ�
 
 ## クイックスタート: localhostでの起動を試す場合
 
-1. etc/misskey-default.ymlの`url:`の欄が`http://localhost`になっていることを確認します
-2. `docker-compose up -d --wait web`を実行します
+1. 環境変数を設定
+   1. ```bash 
+        $ cp etc/docker.env.sample           etc/docker.env
+        $ cp etc/misskey-default.yml.sample  etc/misskey-default.yml
+        $ cp etc/pg-init.sql.sample          etc/pg-init.sql
+        ```
+2. etc/misskey-default.ymlの`url:`の欄が`http://localhost`になっていることを確認します
+3. `docker-compose up -d --wait web`を実行します
 4. http://localhost/ にアクセスします
 
 ## クイックスタート: ドメインを使う場合
