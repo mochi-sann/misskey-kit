@@ -7,6 +7,7 @@ TZ=Asia/Tokyo
 # Ai-chan
 30 14 * * * /misskey/bin/stop-ai.sh
 30 22 * * * /misskey/bin/start-ai.sh
+30 3 * * 0 /misskey/bin/note-ai.sh みなさん、お昼ですよー:sushicopter:
 30 14 * * 0 /misskey/bin/note-ai.sh みなさん、おやすみなさい
 30 14 * * 1 /misskey/bin/note-ai.sh もうねます、みなさんも早くねてくださいね
 30 14 * * 2 /misskey/bin/note-ai.sh ふあーあ、おやすみなさい⋯
