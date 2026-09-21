@@ -71,6 +71,7 @@ services:
       - restore_command=pgbackrest-env --stanza=misskey archive-get %f %p
     networks:
       - internal_network
+      - backup_network
     env_file:
       - ./etc/docker.env
     volumes:
@@ -113,6 +114,7 @@ networks:
   internal_network:
     internal: true
   external_network:
+  backup_network:
 
 volumes:
   db-data:
