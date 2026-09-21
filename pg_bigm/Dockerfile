@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/postgres:15 AS pg_bigm
+FROM public.ecr.aws/docker/library/postgres:15-trixie AS pg_bigm
 
 RUN apt-get update
 RUN  apt-get install -y --no-install-recommends \
@@ -10,7 +10,7 @@ RUN git clone -b REL1_2_STABLE --depth 1 https://github.com/pgbigm/pg_bigm.git
 WORKDIR /pg_bigm
 RUN make USE_PGXS=1 && make USE_PGXS=1 install
 
-FROM public.ecr.aws/docker/library/postgres:15
+FROM public.ecr.aws/docker/library/postgres:15-trixie
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends pgbackrest \
