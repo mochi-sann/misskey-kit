@@ -13,7 +13,7 @@ RUN make USE_PGXS=1 && make USE_PGXS=1 install
 FROM public.ecr.aws/docker/library/postgres:15-trixie
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends pgbackrest \
+  && apt-get install -y --no-install-recommends ca-certificates pgbackrest \
   && rm -rf /var/lib/apt/lists/*
 
 COPY --from=pg_bigm /usr/share/postgresql/15/extension/* /usr/share/postgresql/15/extension/
