@@ -8,16 +8,10 @@ export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
 export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 . "$SCRIPT_DIR"/../etc/docker.env
 
-SUFFIX="${1:-}"
+SUFFIX="${1:-latest}"
 
 docker compose exec db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -F custom \
     | \
 docker run --rm -i --env-file "$SCRIPT_DIR"/../etc/docker.env amazon/aws-cli:2.22.35 \
     ${S3_ENDPOINT:+--endpoint-url "${S3_ENDPOINT}"} \
-    s3 cp - "${BACKUP_OBJECT_S3URL}_latest"
-
-if [ -n "$SUFFIX" ]; then
-    docker run --rm -i --env-file "$SCRIPT_DIR"/../etc/docker.env amazon/aws-cli:2.22.35 \
-        ${S3_ENDPOINT:+--endpoint-url "${S3_ENDPOINT}"} \
-        s3 cp "${BACKUP_OBJECT_S3URL}_latest" "${BACKUP_OBJECT_S3URL}_${SUFFIX}"
-fi
+    s3 cp - "${BACKUP_OBJECT_S3URL}_${SUFFIX}"
