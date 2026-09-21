@@ -9,10 +9,8 @@ export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 
 TAG="${1:-latest}"
 
-# Always take a database backup before starting the update so we can roll back
-# if anything goes wrong during the deployment.
-BACKUP_SUFFIX="before-update-$(date +%Y%m%d-%H%M%S)"
-"$SCRIPT_DIR"/backup-db.sh "$BACKUP_SUFFIX"
+# Always take a differential backup before starting the update.
+"$SCRIPT_DIR"/backup-db.sh diff
 
 docker container prune -f
 docker image prune -f

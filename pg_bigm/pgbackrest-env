@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+case "${BACKUP_OBJECT_S3URL:-}" in
+    s3://*/*) REPOSITORY="${BACKUP_OBJECT_S3URL#s3://}" ;;
+    *) echo "BACKUP_OBJECT_S3URL must be s3://BUCKET/PATH" >&2; exit 1 ;;
+esac
+
+ENDPOINT="${S3_ENDPOINT:-https://s3.${AWS_DEFAULT_REGION:?}.amazonaws.com}"
+case "$ENDPOINT" in
+    https://*) ENDPOINT="${ENDPOINT#https://}" ;;
+    *) echo "S3_ENDPOINT must use https://" >&2; exit 1 ;;
+esac
+ENDPOINT="${ENDPOINT%/}"
+case "$ENDPOINT" in
+    */*) echo "S3_ENDPOINT must not contain a path" >&2; exit 1 ;;
+esac
+
+export PGUSER="${POSTGRES_USER:-postgres}"
+export PGBACKREST_PG1_PATH="${PGDATA:-/var/lib/postgresql/data}"
+export PGBACKREST_REPO1_TYPE=s3
+export PGBACKREST_REPO1_S3_BUCKET="${REPOSITORY%%/*}"
+export PGBACKREST_REPO1_PATH="/${REPOSITORY#*/}"
+export PGBACKREST_REPO1_S3_ENDPOINT="$ENDPOINT"
+export PGBACKREST_REPO1_S3_REGION="${AWS_DEFAULT_REGION:?}"
+export PGBACKREST_REPO1_S3_KEY="${AWS_ACCESS_KEY_ID:?}"
+export PGBACKREST_REPO1_S3_KEY_SECRET="${AWS_SECRET_ACCESS_KEY:?}"
+export PGBACKREST_REPO1_S3_URI_STYLE=path
+export PGBACKREST_REPO1_RETENTION_FULL=2
+export PGBACKREST_REPO1_BUNDLE=y
+export PGBACKREST_REPO1_BLOCK=y
+
+exec /usr/bin/pgbackrest "$@"

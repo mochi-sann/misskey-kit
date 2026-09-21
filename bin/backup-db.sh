@@ -1,6 +1,6 @@
 #!/bin/bash
-# Back up your database to S3
-# Usage: ./backup-db.sh [SUFFIX]
+# Back up your database to S3 with pgBackRest
+# Usage: ./backup-db.sh [full|diff]
 
 set -euCo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>&1 >/dev/null && pwd)"
@@ -8,10 +8,11 @@ export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
 export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 . "$SCRIPT_DIR"/../etc/docker.env
 
-SUFFIX="${1:-latest}"
+TYPE="${1:-diff}"
+case "$TYPE" in
+    full|diff) ;;
+    *) echo "Usage: $0 [full|diff]" >&2; exit 2 ;;
+esac
 
-docker compose exec db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -F custom \
-    | \
-docker run --rm -i --env-file "$SCRIPT_DIR"/../etc/docker.env amazon/aws-cli:2.22.35 \
-    ${S3_ENDPOINT:+--endpoint-url "${S3_ENDPOINT}"} \
-    s3 cp - "${BACKUP_OBJECT_S3URL}_${SUFFIX}"
+docker compose exec -T --user postgres db pgbackrest-env --stanza=misskey stanza-create
+docker compose exec -T --user postgres db pgbackrest-env --stanza=misskey --type="$TYPE" backup
