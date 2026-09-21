@@ -61,6 +61,14 @@ services:
     restart: always
     build: 
       context: pg_bigm
+    command:
+      - postgres
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=pgbackrest-env --stanza=misskey archive-push %p
+      - -c
+      - restore_command=pgbackrest-env --stanza=misskey archive-get %f %p
     networks:
       - internal_network
     env_file:

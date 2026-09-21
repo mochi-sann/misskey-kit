@@ -1,8 +1,10 @@
 LANG=ja_JP.UTF-8
 TZ=Asia/Tokyo
 
-# タイムゾーンの関係で- 9時間してる
-18 * * * * /misskey/bin/backup-db.sh
+# タイムゾーンの関係で- 9時間してる（日本時間の毎日3:18）
+18 18 * * 6 /misskey/bin/backup-db.sh full
+18 18 * * 0-5 /misskey/bin/backup-db.sh diff
+8 * * * * /misskey/bin/check-db-backup.sh
 
 # Ai-chan
 30 14 * * * /misskey/bin/stop-ai.sh

@@ -34,27 +34,29 @@ Cloudflareを使うので固定IPアドレスは不要、それどころかグ�
 
 ## 追加: DBバックアップとその定期実行
 
-1. AWS S3 をはじめとするオブジェクトストレージを作成し、そのクレデンシャルを用意します
+バックアップにはpgBackRestを使います。週1回のフルバックアップ、毎日の差分バックアップ、継続的なWALアーカイブが作成され、直近2世代のフルバックアップが保持されます。
+
+1. AWS S3 をはじめとするオブジェクトストレージを作成し、そのクレデンシャルを用意します。クレデンシャルにはオブジェクトの作成・取得・一覧・削除権限が必要です
 2. etc/docker.envの`AWS_ACCESS_KEY_ID=`の欄にAWSのアクセスキーを入力します
 3. etc/docker.envの`AWS_SECRET_ACCESS_KEY=`の欄にAWSのシークレットアクセスキーを入力します
 4. etc/docker.envの`AWS_DEFAULT_REGION=`の欄にAWSのリージョンを入力します。AWS S3以外のオブジェクトストレージの場合はそのままにしておきます
-5. AWS S3以外のオブジェクトストレージの場合は、etc/docker.envの`S3_ENDPOINT=`の欄にオブジェクトストレージのエンドポイントURLを入力します
+5. AWS S3以外のオブジェクトストレージの場合は、etc/docker.envの`S3_ENDPOINT=`の欄にHTTPSのエンドポイントURLを入力します
     - ヒント: Cloudflare R2の場合、`https://XXXXXXXXXX.r2.cloudflarestorage.com/BUCKET_NAME`のようなURLを案内されますが、最後の`BUCKET_NAME`は不要です。バケット名はこのあと`BACKUP_OBJECT_S3URL`を指定するときに使います
-6. etc/docker.envの`BACKUP_OBJECT_S3URL=`の欄に`S3://`から始まるバケット名を含むパス名を入力します
-7. bin/backup-db.shを実行すると、バケット上に指定通りのキー名でDBのバックアップが作成されます
-8. etc/crontab に毎時のbin/backup-db.sh呼び出しが設定されているので、この通りに自動バックアップされるようになります
-9. リストアの練習は、他のサーバーに同じ設定ファイルを置いて行うのがよいでしょう
-    1. `docker compose up -d db` としてDBを起動します
-    2. `bin/restore-db.sh`としてDBをリストアします
-    4. `docker compose up -d web`としてMisskeyを起動します
-    5. http://localhost/ にアクセスします。バックアップしたときの状態に戻っているはずです
-10. 実際のリストアの際には、次のような手順になるでしょう
+6. etc/docker.envの`BACKUP_OBJECT_S3URL=`の欄に`s3://BUCKET/PATH`形式で保存先を入力します
+7. `docker compose up -d --build --wait db`を実行してDBを更新します
+8. `bin/backup-db.sh full`を実行して最初のフルバックアップを作成します。以降はetc/crontabの設定に従って自動実行されます
+9. `docker compose exec -T --user postgres db pgbackrest-env --stanza=misskey info`でバックアップ一覧を確認できます。WALアーカイブの失敗は毎時検査され、cronコンテナのログに記録されます
+10. リストアの練習は、他のサーバーに同じ設定ファイルを置いて行うのがよいでしょう
+    1. `docker compose build db`でDBイメージを用意します
+    2. `bin/restore-db.sh`で最新のWALまでリストアしてDBを起動します。特定のバックアップ時点に戻す場合は`bin/restore-db.sh BACKUP_SET`で指定できます
+    3. `docker compose up -d web`としてMisskeyを起動します
+    4. http://localhost/ にアクセスします。バックアップしたときの状態に戻っているはずです
+11. 実際のリストアの際には、次のような手順になるでしょう
     1. `docker compose down` でいったん全コンテナを終了します
-    2. `docker compose up -d db` としてDBだけを起動します
-    2. `bin/restore-db.sh`としてDBをリストアします
-    4. `docker compose up -d web`としてMisskeyを起動します
-    5. http://localhost/ にアクセスし、バックアップしたときの状態に戻っていることを確認します
-    6. `docker-compose up -d --wait tunnel`を実行しWebに公開します
+    2. `bin/restore-db.sh`でDBをリストアして起動します
+    3. `docker compose up -d web`としてMisskeyを起動します
+    4. http://localhost/ にアクセスし、バックアップしたときの状態に戻っていることを確認します
+    5. `docker compose up -d --wait tunnel`を実行しWebに公開します
 
 ## 追加: misskeyのアップデート
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Restore your database from 
-# Usage: ./backup-db.sh [SUFFIX]
+# Restore the latest pgBackRest backup, or a specific backup set
+# Usage: ./restore-db.sh [BACKUP_SET]
 
 set -euCo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>&1 >/dev/null && pwd)"
@@ -8,10 +8,12 @@ export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
 export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 . "$SCRIPT_DIR"/../etc/docker.env
 
-SUFFIX="${1:-latest}"
+ARGS=(--stanza=misskey --delta)
+if [ -n "${1:-}" ]; then
+    ARGS+=(--set="$1" --type=immediate --target-action=promote)
+fi
 
-docker run --rm -i --env-file "$SCRIPT_DIR"/../etc/docker.env amazon/aws-cli:2.22.35 \
-    ${S3_ENDPOINT:+--endpoint-url "${S3_ENDPOINT}"} \
-    s3 cp "${BACKUP_OBJECT_S3URL}${SUFFIX+_${SUFFIX}}" - \
-    | \
-docker compose exec -T db pg_restore -d misskey --clean
+docker compose stop db
+docker compose run --rm --no-deps --user postgres --entrypoint pgbackrest-env db \
+    "${ARGS[@]}" restore
+docker compose up -d --wait db
