@@ -8,7 +8,9 @@ export COMPOSE_PROJECT_DIR="${COMPOSE_PROJECT_DIR:-"${SCRIPT_DIR}"/..}"
 export COMPOSE_FILE="$SCRIPT_DIR"/../docker-compose.yml
 . "$SCRIPT_DIR"/../etc/docker.env
 
-docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
+docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  -c "create extension if not exists pg_bigm schema public" \
+  -c "
   create index concurrently if not exists
     note_lower_text_bigm
   on note
