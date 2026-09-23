@@ -44,7 +44,7 @@ Cloudflareを使うので固定IPアドレスは不要、それどころかグ�
     - ヒント: Cloudflare R2の場合、`https://XXXXXXXXXX.r2.cloudflarestorage.com/BUCKET_NAME`のようなURLを案内されますが、最後の`BUCKET_NAME`は不要です。バケット名はこのあと`BACKUP_OBJECT_S3URL`を指定するときに使います
 6. etc/docker.envの`BACKUP_OBJECT_S3URL=`の欄に`s3://BUCKET/PATH`形式で保存先を入力します
 7. `docker compose up -d --build --wait db`を実行してDBを更新します
-8. `bin/backup-db.sh full`を実行して最初のフルバックアップを作成します。以降はetc/crontabの設定に従って自動実行されます
+8. `bin/backup-db.sh full`を実行して最初のフルバックアップを作成します。以降はetc/crontabの設定に従って自動実行されます。バックアップの進捗は時刻付きでログに出力されるので、cronからの自動実行分は`docker compose logs cron`で追えます
 9. `docker compose exec -T --user postgres db pgbackrest-env --stanza=misskey info`でバックアップ一覧を確認できます。WALアーカイブの失敗は毎時検査され、cronコンテナのログに記録されます
 10. リストアの練習は、他のサーバーに同じ設定ファイルを置いて行うのがよいでしょう
     1. `docker compose build db`でDBイメージを用意します
@@ -60,7 +60,7 @@ Cloudflareを使うので固定IPアドレスは不要、それどころかグ�
 
 ## 追加: misskeyのアップデート
 
-1. `bin/update-misskey.sh`を実行します。これは [公式Dockerhub](https://hub.docker.com/r/misskey/misskey) から最新のイメージを取得し、アプリケーションインスタンスを更新します。このとき、新しいバージョンのコンテナを起動してから既存のコンテナを停止するため、サービスは無停止です
+1. `bin/update-misskey.sh`を実行します。これは [公式Dockerhub](https://hub.docker.com/r/misskey/misskey) から最新のイメージを取得し、アプリケーションインスタンスを更新します。このとき、新しいバージョンのコンテナを起動してから既存のコンテナを停止するため、サービスは無停止です。バックアップ・イメージ取得・コンテナ切り替えといった各ステップの進捗は、時刻付きでログに出力されます
 2. β版など、latest以外のタグを使いたい場合は、`bin/update-misskey.sh TAG`のようにタグ名を指定します
 
 
